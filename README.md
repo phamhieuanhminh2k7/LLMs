@@ -1,151 +1,249 @@
-# Official ARC-AGI-3 local environments
+# ARC Prize 2026 — Local Dev Starter
 
-This repository now contains an integration with the official
-[ARC Prize Toolkit](https://github.com/arcprize/ARC-AGI) and
-[ARCEngine](https://github.com/arcprize/ARCEngine) in `arc_local/`.
-The earlier custom Pixel Escape game and its tests have been removed.
-There are no learning agents, training code, or replacement game mechanics.
+**Go from zero to your first Kaggle submission in about 10 minutes, without
+ever opening the Kaggle notebook editor.**
 
-**Current status:** the integration and viewer checks pass, but **no official
-game has been downloaded or successfully run in this cloud workspace yet**.
-The cloud proxy blocks `three.arcprize.org` with HTTP 403, including the anonymous
-key endpoint required for the official download. Run the download command below
-on your own computer with Internet access, or allow that domain in the cloud
-environment settings. `ls20` is the official quickstart game, not a locally
-verified game in this checkout. The `verify` command fails if it is missing.
+This is a starter kit for the [ARC Prize 2026 — ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3)
+competition. You'll edit one Python file on your laptop, see it actually play
+the real game environments locally, and push it to Kaggle as a submission with
+a single command.
 
-## Windows quickstart
+No Docker. No `submission.json` to hand-write. No copy-pasting between your
+editor and a notebook.
 
-Install **64-bit Python 3.12** ([Windows installer](https://www.python.org/downloads/release/python-31210/)).
-In GitHub Desktop, fetch/pull `main`, then use **Repository → Show in Explorer**.
-In that folder's address bar type `cmd` and press Enter. All commands below run
-from the downloaded `LLMs` folder; `/workspace` is not a path on your computer.
+---
 
-```bat
-py -3.12 -m venv .venv
-.venv\Scripts\python -m pip install --only-binary=:all: -r arc_local\requirements.txt
-.venv\Scripts\python -m arc_local download ls20
-.venv\Scripts\python -m arc_local list
-.venv\Scripts\python -m arc_local verify ls20
-.venv\Scripts\python -m arc_local play ls20
+## What you need before you start
+
+- **Python 3.12** (the competition's `arc-agi` package requires it)
+  - macOS: `brew install python@3.12`
+  - Ubuntu: `sudo apt install python3.12 python3.12-venv`
+  - Windows: install from [python.org](https://www.python.org/downloads/)
+- **git** (to clone the official agent framework)
+- **A Kaggle account** with the competition rules accepted
+  ([accept here](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/rules))
+
+That's it. No GPU required for the starter agent.
+
+---
+
+## Quick start
+
+```bash
+# 1.  Clone this repo and step in
+git clone https://github.com/arcprize/ARC-AGI-3-Kaggle-Starter.git
+cd ARC-AGI-3-Kaggle-Starter
+
+# 2.  Drop your Kaggle API token (kaggle.com → Settings → Create New Token)
+#     into the project-local .kaggle/ folder (NOT your home directory)
+mkdir -p .kaggle && echo "KGAT_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" > .kaggle/access_token
+chmod 600 .kaggle/access_token
+
+# 3.  One-time setup: venv, dependencies, framework
+make setup
+
+# 4.  Open agent/my_agent.py to see the random-action starter, then edit
+#     it to make a better submission. This is the only file you change.
+
+# 5.  Run it locally against every game in the competition (takes seconds)
+make play-local
+
+# 6.  Push it to Kaggle as a submission notebook
+make submit
+
+# 7.  Watch the run
+make status
+
+# 8.  When status shows "complete", open the notebook on kaggle.com,
+#     find your kernel, click "Submit to Competition" in the top
+#     right, and pick `submission.parquet` from the Output File
+#     dropdown. That's one of your 5 daily submissions.
 ```
 
-Stop if installation or download fails; play requires a successful download.
-If your old `.venv` uses a different Python version, recreate it with
-`py -3.12 -m venv --clear .venv` first. This clears installed packages only.
+That's the entire loop. Steps 4–7 are what you'll repeat as you iterate;
+step 8 is the deliberate moment when you spend a daily submission.
 
-## macOS / Linux
+---
 
-Open a terminal in this repository's folder, with Python 3.12 installed:
+## The one file you edit: `agent/my_agent.py`
 
-```sh
-python3.12 -m venv .venv
-.venv/bin/python -m pip install --only-binary=:all: -r arc_local/requirements.txt
-.venv/bin/python -m arc_local download ls20
-.venv/bin/python -m arc_local list
-.venv/bin/python -m arc_local verify ls20
-.venv/bin/python -m arc_local play ls20
-```
-
-After installation, use your environment's Python executable for every command.
-The examples below abbreviate it to `python`.
-
-## Downloads versus offline play
-
-- `python -m arc_local catalogue`: fetch the public catalogue accessible to you (online).
-- `python -m arc_local download ls20`: use the official Toolkit's `NORMAL` mode
-  to download source and metadata, then reopen them in `OFFLINE` mode.
-- `python -m arc_local list`: list complete local downloads only (offline).
-- `python -m arc_local play GAME_ID --scale 8`: play a downloaded game (offline).
-- `python -m arc_local.headless GAME_ID`: reset and take one valid action without a window (offline).
-
-Downloads stay under `arc_local/environment_files/<game>/<version>/` as the
-original Python source and `metadata.json`, plus a provenance/checksum file.
-Game files are not rewritten. Existing version folders are never overwritten.
-Use full versioned IDs from `list` to select a particular downloaded version.
-You can disconnect from the Internet after a successful download and installation.
-
-The official docs name `ls20`, `ft09`, and `vc33` as anonymous public examples.
-**None is bundled in this checkout yet.** Use `catalogue` to discover current
-availability before downloading another game. Additional public games require
-a free account/API key from [ARC Prize](https://three.arcprize.org).
-Set `ARC_API_KEY` in your local environment or an ignored `.env` file; never put
-it in Python code or Git. An unset key uses the Toolkit's anonymous-key flow.
-In Windows Command Prompt, use `set ARC_API_KEY=YOUR_KEY`; on macOS/Linux, use
-`export ARC_API_KEY=YOUR_KEY`, replacing the placeholder with your own key.
-Offline play needs no key. Private evaluation games are outside this integration.
-
-Leave `OPERATION_MODE` and `ARC_BASE_URL` unset. The integration chooses its own
-operation mode; it rejects competition mode before any connection is made.
-The cloud setup needs `three.arcprize.org` for download and `docs.arcprize.org`
-for web documentation; these network restrictions are separate from API keys.
-
-## Manual controls
-
-The local Toolkit provides visual renderers and a REST API but no local keyboard/
-mouse player. This small Pygame viewer uses the official palette and mappings:
-
-| Input | Official action |
-| --- | --- |
-| W / Up / 1 | ACTION1 |
-| S / Down / 2 | ACTION2 |
-| A / Left / 3 | ACTION3 |
-| D / Right / 4 | ACTION4 |
-| Space / F / 5 | ACTION5 (game-specific; not a generic wait) |
-| Left click inside the image | ACTION6, with native pixel x/y coordinates |
-| Z / 7 | ACTION7 |
-| R | The original RESET action |
-| Escape | Close the viewer |
-
-Only actions currently exposed by the game are forwarded. Controls and status
-appear below the image. Every frame returned by an action is displayed in order
-at the game's metadata FPS before the next queued input is sent. No action runs
-just because time passes. Enlargement affects the display only. Original rules,
-sprites, movement increments, win/loss/reset behavior, and color-index arrays
-are handled entirely by the official game and engine.
-
-## Python API without a window
+This is the only file you normally touch. It defines a class called `MyAgent`
+with two methods:
 
 ```python
-from arc_local import load_game
+class MyAgent(Agent):
+    def is_done(self, frames, latest_frame) -> bool:
+        """Return True when your agent wants to stop playing."""
+        ...
 
-env = load_game("ls20")                 # Explicit OFFLINE loading; no download.
-observation = env.reset()               # Original FrameDataRaw, not a Gym tuple.
-assert observation is not None
-action = env.action_space[0]            # A currently supported official action.
-data = {"x": 0, "y": 0} if action.is_complex() else {}
-result = env.step(action, data=data)
-assert result is not None
-
-for frame in result.frame:              # Keep all frames, not only the last.
-    print(frame.shape, frame.dtype)     # Native 2D color indices; no RGB conversion.
-print(result.state, result.available_actions, result.levels_completed)
+    def choose_action(self, frames, latest_frame) -> GameAction:
+        """Look at the game state and return the next action."""
+        ...
 ```
 
-`load_game` returns the official `LocalEnvironmentWrapper` directly. Observations
-are the official `FrameDataRaw` response and native NumPy arrays, with no extra
-game-internal state, rewards, resizing, feature extraction, or agent interface.
-The viewer allocates separate RGB arrays using `arc_agi.rendering.COLOR_MAP`.
+The starter version picks random actions — a baseline that proves your whole
+pipeline works end-to-end. Replace the body of `choose_action` with your
+strategy. Everything else (Kaggle plumbing, submission file format, game
+orchestration) is handled for you.
 
-## Verification and attribution
+---
 
-```sh
-python -m unittest discover -s arc_local/tests -v
-python -m arc_local verify ls20
+## What happens when you run `make submit`
+
+The competition is a *code* competition: you submit a notebook, Kaggle runs it
+twice.
+
+```diagram
+   make submit
+       │
+       ▼
+   ┌─────────────────────────────────────┐
+   │  Kaggle Phase A: Save & Run All     │
+   │  ─ Runs your notebook in their      │
+   │    real environment                 │
+   │  ─ Validates that your code         │
+   │    executes without errors          │
+   │  ─ make status shows "complete"     │
+   └─────────────────┬───────────────────┘
+                     │
+                     │  You click "Submit to Competition"
+                     │  on the kernel page
+                     ▼
+   ┌─────────────────────────────────────┐
+   │  Kaggle Phase B: Competition Rerun  │
+   │  ─ Your agent actually plays the    │
+   │    hidden game set                  │
+   │  ─ Your leaderboard score appears   │
+   └─────────────────────────────────────┘
 ```
 
-The unit suite tests the integration boundary with synthetic pixel arrays, not
-replacement games. Currently **11 checks pass and 1 real-game check is skipped**
-because downloading is blocked. The manual display conversion and surface were
-tested using SDL's dummy driver; actual official-game play is still unverified.
-The official packages installed successfully on Python 3.12, and pip resolved
-and downloaded prebuilt Windows x64 / Python 3.12 packages for all requirements.
-That checks package availability, not Windows gameplay.
+`make submit` builds and uploads the notebook (Phase A). After
+`make status` reports `complete`, open the kernel on kaggle.com and click
+**"Submit to Competition"** to enter Phase B and get a leaderboard score.
 
-After download, `verify` checks real resets and available actions against the
-official API directly, compares every native frame, and checks RGB conversion
-doesn't change them. HTTP requests and socket connections are blocked during
-these checks, so any attempted online gameplay fails verification.
+> **You only get 5 official submissions per day**, so it pays to be
+> confident before you submit: get `make play-local` passing, then submit.
 
-See [sources and licenses](arc_local/THIRD_PARTY.md). Upstream game code is kept
-separate from integration code; the integration does not define any ARC games.
+> **Heads up:** Before your first `make submit`, open
+> [`notebooks/kernel-metadata.json`](notebooks/kernel-metadata.json) and
+> replace `REPLACE_WITH_YOUR_USERNAME` with your Kaggle handle. The Makefile
+> will refuse to push until you do.
+
+### Choosing an accelerator
+
+The notebook is generated with a **T4 GPU** by default (matches Kaggle's
+sample submission). To change it, open
+[`scripts/build_notebook.py`](scripts/build_notebook.py) and edit **one
+line** near the top:
+
+```python
+ACCELERATOR = "t4"     # change "t4" to one of: cpu, t4, p100, rtx6000
+```
+
+Then re-run `make submit`. That's it — both the notebook metadata and
+[`notebooks/kernel-metadata.json`](notebooks/kernel-metadata.json) get
+updated automatically.
+
+| Value | Hardware | When to use |
+|---|---|---|
+| `"cpu"` | No GPU | The random starter, or any non-ML agent |
+| `"t4"` | Nvidia T4 ×2 | **Default.** Small models, fast iteration |
+| `"p100"` | Nvidia P100 | Single big-memory GPU |
+| `"rtx6000"` | Nvidia RTX 6000 (`g4-standard-48`) | Heavy ML; **ARC-AGI-3 exclusive**, burns GPU quota faster |
+
+RTX 6000 is reserved for ARC-AGI-3 notebooks only — don't use it for early
+iteration. All accelerated Kaggle sessions have internet disabled, which is
+already the default in this kit.
+
+---
+
+## All the commands
+
+| Command | What it does |
+|---|---|
+| `make setup` | One-time install: Python venv, `arc-agi`, `kaggle` CLI, clones the framework |
+| `make play-local` | Runs your agent against every game in the dataset, locally |
+| `make play-local GAME=ls20` | Same, but only one game (faster while debugging) |
+| `make verify-local` | 30-second smoke test on two games |
+| `make list-games` | Print every game id available |
+| `make pull-sample` | Download the official sample agent for reference |
+| `make notebook` | Build the Kaggle notebook from your agent (no push) |
+| `make submit` | Build the notebook **and** push it to Kaggle |
+| `make status` | Check the status of your most recent Kaggle run |
+| `make clean` | Remove the venv, downloads, and generated notebook |
+
+---
+
+## Why this setup, instead of editing in the Kaggle notebook?
+
+Three reasons:
+
+1. **Iteration speed.** Editing in your normal IDE, then `make play-local`,
+   gives you a real-game-engine feedback loop in seconds. The Kaggle editor's
+   loop is *minutes* per change.
+2. **No environment surprises.** The local `arc-agi` PyPI package hosts the
+   same game engine the Kaggle gateway runs. If it works locally, it works on
+   Kaggle.
+3. **Your code stays in git.** Notebooks are awful for diffs and code review.
+   Here your real work lives in [`agent/my_agent.py`](agent/my_agent.py); the
+   notebook is just an auto-generated deployment artifact.
+
+---
+
+## Project layout
+
+```
+.
+├── agent/
+│   └── my_agent.py             ★ The file you edit
+├── scripts/
+│   ├── play_local.py           Runs your agent against real games
+│   ├── build_notebook.py       Packages your agent into a Kaggle notebook
+│   └── slim_framework.py       Trims framework deps so install is light
+├── notebooks/
+│   ├── kernel-metadata.json    Edit once: your Kaggle username
+│   └── submission.ipynb        Auto-generated, never edit by hand
+├── vendor/                     Cloned framework (gitignored)
+├── .venv/                      Python 3.12 venv (gitignored)
+├── .kaggle/                    Your project-local Kaggle token (gitignored)
+└── Makefile
+```
+
+---
+
+## Troubleshooting
+
+**`make setup` fails: `python3.12: command not found`**
+Install Python 3.12 — the `arc-agi` package requires it. macOS:
+`brew install python@3.12`.
+
+**`make submit` says "edit kernel-metadata.json"**
+You haven't replaced `REPLACE_WITH_YOUR_USERNAME` in
+[`notebooks/kernel-metadata.json`](notebooks/kernel-metadata.json) yet.
+
+**`make submit` says `401 Unauthorized`**
+Your Kaggle token is missing or invalid. Generate a fresh one from your
+[Kaggle Settings page](https://www.kaggle.com/settings) and overwrite
+`.kaggle/access_token`.
+
+**`make play-local` says "Could not create environment"**
+Your machine couldn't reach the ARC-AGI API to download the game source on
+first run. Check your internet, then try again — once downloaded, games are
+cached in `environment_files/` and you're fully offline.
+
+**My local score is 0.0**
+That's expected for the random starter agent. Your job is to make it
+non-zero. 🙂
+
+---
+
+## Where to go next
+
+- Read the [ARC-AGI-3 docs](https://docs.arcprize.org/) to understand the
+  benchmark.
+- `make pull-sample` to study Kaggle's reference agent (the same one
+  currently sitting on the leaderboard).
+- The competition's [discussion forum](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/discussion)
+  for community Q&A.
+
+Good luck. Looking forward to seeing what you build.
