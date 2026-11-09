@@ -1,0 +1,2 @@
+# Preserve downloaded official files and their checksums on Windows too.
+arc_local/environment_files/** -text

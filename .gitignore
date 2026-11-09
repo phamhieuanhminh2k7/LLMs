@@ -5,3 +5,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+.env
+.env.*
+arc_local/.runtime/
+arc_local/.download-*/
